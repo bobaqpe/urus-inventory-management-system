@@ -1,4 +1,4 @@
-import { setupAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from './auth-client.js';
+import { setupAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup } from './auth-client.js';
 const $ = id => document.getElementById(id);
 let registering = false;
 $('switch-mode').onclick = () => {
@@ -8,12 +8,23 @@ $('switch-mode').onclick = () => {
   $('reset-password').hidden = registering;
   $('password').autocomplete = registering ? 'new-password' : 'current-password';
   $('submit').textContent = registering ? 'Create account' : 'Sign in';
-  $('switch-mode').textContent = registering ? 'Already have an account? Sign in' : 'Create an account';
+  $('auth-title').textContent = registering ? 'Create your account' : 'Welcome back';
+  $('switch-label').textContent = registering ? 'Already have an account?' : 'New to URUS?';
+  $('switch-mode').textContent = registering ? 'Sign in' : 'Create an account';
   $('intro').textContent = registering ? 'Create your URUS account.' : 'Sign in to manage your inventory.';
   $('message').textContent = '';
 };
 try {
   const auth = await setupAuth();
+  $('google-sign-in').onclick = async () => {
+    $('message').textContent = ''; $('google-sign-in').disabled = true;
+    try { await signInWithPopup(auth, new GoogleAuthProvider()); }
+    catch (error) {
+      if (error.code === 'auth/popup-closed-by-user') $('message').textContent = 'Sign-in was cancelled.';
+      else if (error.code === 'auth/account-exists-with-different-credential') $('message').textContent = 'An account with this email uses a different sign-in method. Please sign in with that method.';
+      else $('message').textContent = error.message;
+    } finally { $('google-sign-in').disabled = false; }
+  };
   $('reset-password').onclick = async () => {
     const email = $('email').value.trim();
     if (!email || !$('email').checkValidity()) { $('message').textContent = 'Enter your email address first.'; $('email').focus(); return; }
