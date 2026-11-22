@@ -2,14 +2,30 @@ const menuBtn = document.getElementById('menu-btn');
 const sidebar = document.getElementById('sidebar');
 menuBtn?.addEventListener('click', () => sidebar?.classList.toggle('active'));
 document.querySelector('.settings-btn')?.addEventListener('click', () => { location.href = '/settings.html'; });
-const container = document.querySelector('.container');
-const handle = document.querySelector('.resize-handle');
-let resizing = false;
-handle?.addEventListener('mousedown', () => { resizing = true; });
-document.addEventListener('mousemove', event => {
-  if (!resizing) return;
-  const width = window.innerWidth - event.clientX;
-  if (width >= 250 && width <= 700) container.style.gridTemplateColumns = `1fr 6px ${width}px`;
+
+// Shared chat shell. Messaging will be connected in a future release.
+const chat = document.createElement('div');
+chat.className = 'pengurus-widget';
+chat.innerHTML = `
+  <section class="pengurus-panel" id="pengurus-panel" aria-labelledby="pengurus-title" hidden>
+    <header class="pengurus-header">
+      <div><span class="pengurus-header-icon" aria-hidden="true">✦</span><h2 id="pengurus-title">Ask Pengurus</h2></div>
+      <button class="pengurus-close" type="button" aria-label="Close chat">×</button>
+    </header>
+    <div class="pengurus-messages" aria-live="polite"><p>Chat is coming soon.</p></div>
+    <div class="pengurus-composer"><input type="text" aria-label="Message" placeholder="Type a message..." disabled><button type="button" aria-label="Send message" disabled>➤</button></div>
+  </section>
+  <button class="pengurus-toggle" type="button" aria-label="Open Ask Pengurus" aria-controls="pengurus-panel" aria-expanded="false">
+    <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 5v3M13.5 5h5M7 15H5m22 0h-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="7" y="9" width="18" height="15" rx="5" fill="white"/><circle cx="12.5" cy="16" r="1.6" fill="#0b4a8a"/><circle cx="19.5" cy="16" r="1.6" fill="#0b4a8a"/><path d="M13 20c1.8 1.3 4.2 1.3 6 0" stroke="#0b4a8a" stroke-width="1.5" stroke-linecap="round"/></svg>
+  </button>`;
+document.body.append(chat);
+const panel = chat.querySelector('.pengurus-panel');
+const toggle = chat.querySelector('.pengurus-toggle');
+const closeChat = () => { panel.hidden = true; toggle.setAttribute('aria-expanded', 'false'); toggle.setAttribute('aria-label', 'Open Ask Pengurus'); toggle.focus(); };
+toggle.addEventListener('click', () => {
+  if (!panel.hidden) { closeChat(); return; }
+  panel.hidden = false; toggle.setAttribute('aria-expanded', 'true'); toggle.setAttribute('aria-label', 'Close Ask Pengurus');
+  chat.querySelector('.pengurus-close').focus();
 });
-document.addEventListener('mouseup', () => { resizing = false; });
-handle?.addEventListener('dblclick', () => { container.style.gridTemplateColumns = '1fr 5px 300px'; });
+chat.querySelector('.pengurus-close').addEventListener('click', closeChat);
+document.addEventListener('keydown', event => { if (event.key === 'Escape' && !panel.hidden) closeChat(); });

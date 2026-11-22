@@ -207,3 +207,22 @@ body {
     background: #777;
     color: white;
 }
+/* Floating, non-functional chat shell */
+.container { grid-template-columns: minmax(0, 1fr); grid-template-areas: "header" "main"; }
+.resize-handle, .chat-panel { display: none !important; }
+.pengurus-widget { position: fixed; right: 24px; bottom: 24px; z-index: 950; font-family: 'Segoe UI', sans-serif; }
+.pengurus-toggle { width: 60px; height: 60px; display: grid; place-items: center; border: 0; border-radius: 50%; background: #0b4a8a; color: #fff; cursor: pointer; box-shadow: 0 8px 24px #0b2e5540; }
+.pengurus-toggle:hover { background: #073b72; }
+.pengurus-toggle svg { width: 33px; height: 33px; }
+.pengurus-panel { position: absolute; bottom: 76px; right: 0; width: min(360px, calc(100vw - 32px)); height: min(470px, calc(100dvh - 120px)); min-height: 260px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #dce5ef; border-radius: 16px; background: white; box-shadow: 0 16px 50px #102d4b30; }
+.pengurus-panel[hidden] { display: none !important; }
+.pengurus-header { display: flex; justify-content: space-between; align-items: center; flex: 0 0 auto; padding: 16px 18px; background: #0b4a8a; color: white; }
+.pengurus-header > div { display: flex; align-items: center; gap: 10px; }
+.pengurus-header h2 { color: white; font-size: 16px; margin: 0; }
+.pengurus-header-icon { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 9px; background: #ffffff25; }
+.pengurus-close { border: 0; background: transparent; color: white; font-size: 26px; line-height: 1; cursor: pointer; }
+.pengurus-messages { flex: 1; padding: 20px; color: #7a8b9d; font-size: 14px; }
+.pengurus-composer { display: flex; gap: 8px; padding: 12px; border-top: 1px solid #e9eef3; background: white; }
+.pengurus-composer input { flex: 1; min-width: 0; border: 1px solid #e2e8f0; border-radius: 9px; background: #f7f9fb; padding: 11px; }
+.pengurus-composer button { width: 40px; border: 0; border-radius: 9px; color: #fff; background: #9bb0c6; }
+@media (max-width: 480px) { .pengurus-widget { right: 16px; bottom: 16px; } }
