@@ -15,7 +15,11 @@ $('switch-mode').onclick = () => {
   $('message').textContent = '';
 };
 try {
+  $('google-sign-in').disabled = true;
+  $('submit').disabled = true;
   const auth = await setupAuth();
+  $('google-sign-in').disabled = false;
+  $('submit').disabled = false;
   $('google-sign-in').onclick = async () => {
     $('message').textContent = ''; $('google-sign-in').disabled = true;
     try { await signInWithPopup(auth, new GoogleAuthProvider()); }
@@ -25,13 +29,28 @@ try {
       else $('message').textContent = error.message;
     } finally { $('google-sign-in').disabled = false; }
   };
-  $('reset-password').onclick = async () => {
-    const email = $('email').value.trim();
-    if (!email || !$('email').checkValidity()) { $('message').textContent = 'Enter your email address first.'; $('email').focus(); return; }
-    $('reset-password').disabled = true;
-    try { await sendPasswordResetEmail(auth, email); $('message').textContent = 'If an account exists for this email, a password reset message has been sent.'; }
-    catch (error) { $('message').textContent = error.code === 'auth/invalid-email' ? 'Please enter a valid email address.' : 'Could not send the reset email. Please try again later.'; }
-    finally { $('reset-password').disabled = false; }
+  $('reset-password').onclick = () => {
+    $('reset-email').value = $('email').value.trim(); $('reset-message').textContent = '';
+    $('login-form').hidden = true; $('reset-form').hidden = false;
+    $('google-sign-in').hidden = true; document.querySelector('.divider').hidden = true;
+    document.querySelector('.auth-footer').hidden = true;
+    $('auth-title').textContent = 'Reset your password';
+    $('intro').textContent = 'Enter your email and we’ll send you a reset link.';
+    $('reset-email').focus();
+  };
+  $('reset-back').onclick = () => {
+    $('reset-form').hidden = true; $('login-form').hidden = false;
+    $('google-sign-in').hidden = false; document.querySelector('.divider').hidden = false;
+    document.querySelector('.auth-footer').hidden = false;
+    $('auth-title').textContent = 'Welcome back'; $('intro').textContent = 'Sign in to manage your inventory.';
+  };
+  $('reset-form').onsubmit = async event => {
+    event.preventDefault(); const input = $('reset-email'); const email = input.value.trim();
+    if (!email || !input.checkValidity()) { $('reset-message').textContent = 'Enter a valid email address.'; input.focus(); return; }
+    $('reset-submit').disabled = true;
+    try { await sendPasswordResetEmail(auth, email); $('reset-message').textContent = 'If an account exists for this email, a password reset message has been sent.'; }
+    catch (error) { $('reset-message').textContent = error.code === 'auth/invalid-email' ? 'Please enter a valid email address.' : 'Could not send the reset email. Please try again later.'; }
+    finally { $('reset-submit').disabled = false; }
   };
   onAuthStateChanged(auth, async user => {
     if (!user) return;
