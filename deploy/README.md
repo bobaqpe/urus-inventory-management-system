@@ -28,18 +28,29 @@ place the HTTP endpoint behind a proxy while leaving port 5000 publicly open.
 
 ## Firebase and Cloud Run migration
 
+As of 2026-11-23 the main Cloud Run service uses Neon PostgreSQL. Its pooled
+connection URL is stored in Secret Manager as `urus-neon-db-url`. The Neon CLI
+link points to project `ancient-sky-53121708`, branch `production`; use a direct
+connection for migrations and backups, and the pooled connection for the app.
+For local configuration, `neon env pull --file .secrets/neon.env --service postgres`
+keeps credentials separate from the existing `.env`. Use `DATABASE_URL_UNPOOLED`
+as `DATABASE_URL` for Alembic. The `npm run build` command prepares Firebase
+Hosting assets and checks Python compilation.
+
+The preview environment and Cloud SQL instance were removed on 2026-11-23.
+A Neon backup from before Cloud SQL removal is stored locally in
+`.backups/neon-before-cloudsql-removal.dump`; its archive was checked for
+readability but has not been restored. Store independent backups separately.
+
 The Firebase Hosting site is `https://urus-ba98e.web.app`. Its `/api/**`
 requests are routed to Cloud Run `urus-api` in `asia-southeast1`. The service
-connects via the Cloud SQL socket to database `urus` on instance `urus-db`;
-`DATABASE_URL` is stored in Secret Manager as `urus-db-url`. Cloud SQL daily
-backups are enabled and retain seven backups; instance deletion protection is
-on. The former local `urus_dev` database and its final backup are retained for
+previously connected to Cloud SQL, which has been removed. The former local
+`urus_dev` database and its final backup are retained for
 rollback only. The local application service and its backup timer are disabled
 to avoid writes to the old copy and misleading backups.
 
 Rebuild public static files with `python3 deploy/build-firebase-public.py` before
 any Hosting deployment. Deploying code or altering cloud infrastructure requires
-appropriate Google Cloud credentials. A test copy `urus_staging` remains for
-migration verification and can be removed after successful user acceptance.
+appropriate Google Cloud credentials.
 Do not restart the old service against the old database after cloud cutover:
 it would create a second, divergent dataset.

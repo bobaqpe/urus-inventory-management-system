@@ -5,6 +5,8 @@ from sqlalchemy import create_engine, pool
 url = os.environ.get('DATABASE_URL')
 if not url:
     raise RuntimeError('DATABASE_URL is required')
+if url.startswith(('postgres://', 'postgresql://')):
+    url = 'postgresql+psycopg://' + url.split('://', 1)[1]
 
 if context.is_offline_mode():
     context.configure(url=url, literal_binds=True, dialect_opts={'paramstyle': 'named'})

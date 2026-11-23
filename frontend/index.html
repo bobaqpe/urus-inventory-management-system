@@ -1,1 +1,39 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>URUS — account</title><link rel="stylesheet" href="assets/css/api.css"></head><body><main class="login"><h1>URUS</h1><p id="intro">Sign in to manage your inventory.</p><form id="login-form"><label>Email<input id="email" type="email" required autocomplete="username"></label><label>Password<input id="password" type="password" required minlength="6" autocomplete="current-password"></label><label id="confirm-label" hidden>Confirm password<input id="confirm-password" type="password" minlength="6" autocomplete="new-password"></label><button id="submit">Sign in</button></form><p id="message" role="alert"></p><p><button id="reset-password" class="secondary" type="button">Forgot password?</button></p><button id="switch-mode" class="secondary" type="button">Create an account</button></main><script type="module" src="assets/js/login.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f2f5f8">
+  <title>URUS — Sign in</title>
+  <link rel="stylesheet" href="assets/css/login.css">
+</head>
+<body>
+  <main class="auth-layout">
+    <div class="auth-content">
+      <a href="/" class="brand" aria-label="URUS home"><span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></span><span>URUS</span></a>
+      <section class="auth-card" aria-labelledby="auth-title">
+        <div class="auth-heading"><p class="eyebrow">INVENTORY, MADE SIMPLE</p><h1 id="auth-title">Welcome back</h1><p id="intro">Sign in to manage your inventory.</p></div>
+        <button id="google-sign-in" class="google-button" type="button"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 48 48"><path fill="#4285f4" d="M43.6 24.5c0-1.3-.1-2.6-.4-3.8H24v7.2h11c-.5 2.4-1.9 4.4-4 5.8v4.7h6.5c3.8-3.5 6.1-8.5 6.1-13.9z"/><path fill="#34a853" d="M24 44c5.4 0 10-1.8 13.3-4.9l-6.5-4.7c-1.8 1.2-4.2 1.9-6.8 1.9-5.2 0-9.5-3.5-11.1-8.1H6.2v4.8C9.5 39.5 16.2 44 24 44z"/><path fill="#fbbc05" d="M12.9 28.2a12 12 0 010-8.4V15H6.2a20 20 0 000 18l6.7-4.8z"/><path fill="#ea4335" d="M24 11.7c2.9 0 5.5 1 7.5 2.9l5.6-5.6A19.2 19.2 0 0024 4 20 20 0 006.2 15l6.7 4.8c1.6-4.6 5.9-8.1 11.1-8.1z"/></svg><span>Continue with Google</span></button>
+        <div class="divider"><span>or continue with email</span></div>
+        <form id="login-form">
+          <label for="email">Email address<input id="email" type="email" placeholder="you@company.com" required autocomplete="username"></label>
+          <label for="password">Password<input id="password" type="password" placeholder="Enter your password" required minlength="6" autocomplete="current-password"></label>
+          <label id="confirm-label" for="confirm-password" hidden>Confirm password<input id="confirm-password" type="password" placeholder="Confirm your password" minlength="6" autocomplete="new-password"></label>
+          <div class="forgot-row"><button id="reset-password" class="text-button" type="button">Forgot password?</button></div>
+          <p id="message" role="alert" aria-live="polite"></p>
+          <button id="submit" class="primary-button">Sign in</button>
+        </form>
+        <form id="reset-form" hidden>
+          <label for="reset-email">Email address<input id="reset-email" type="email" placeholder="you@company.com" autocomplete="email"></label>
+          <p id="reset-message" role="status" aria-live="polite"></p>
+          <button id="reset-submit" class="primary-button">Send reset link</button>
+          <button id="reset-back" class="google-button" type="button">Back to sign in</button>
+        </form>
+        <div class="auth-footer"><span id="switch-label">New to URUS?</span> <button id="switch-mode" class="text-button" type="button">Create an account</button></div>
+      </section>
+      <p class="footer-note">Organize your inventory with confidence.</p>
+    </div>
+  </main>
+  <script type="module" src="assets/js/login.js"></script>
+</body>
+</html>
