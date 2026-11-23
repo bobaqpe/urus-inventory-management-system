@@ -47,6 +47,91 @@ body {
     padding: 0;
 }
 
+.business-switcher {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.business-switcher > h1 {
+    min-width: 0;
+}
+
+.business-switcher-toggle {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #c7d7e6;
+    border-radius: 50%;
+    background: #fff;
+    color: var(--primary);
+    cursor: pointer;
+    transition: background .18s ease, border-color .18s ease, transform .18s ease;
+}
+
+.business-switcher-toggle:hover,
+.business-switcher-toggle[aria-expanded="true"] {
+    background: #eaf3fb;
+    border-color: var(--primary);
+}
+
+.business-switcher-chevron {
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: translateY(-2px) rotate(45deg);
+    transition: transform .18s ease;
+}
+
+.business-switcher-toggle[aria-expanded="true"] .business-switcher-chevron {
+    transform: translateY(2px) rotate(225deg);
+}
+
+.business-switcher-menu {
+    position: absolute;
+    z-index: 1100;
+    top: calc(100% + 10px);
+    left: 0;
+    width: max-content;
+    min-width: 210px;
+    max-width: min(320px, calc(100vw - 24px));
+    max-height: min(60vh, 360px);
+    overflow: auto;
+    padding: 6px;
+    border: 1px solid #dce5ee;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 12px 30px rgba(11, 46, 85, .16);
+}
+
+.business-switcher-option {
+    width: 100%;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+}
+
+.business-switcher-option:hover,
+.business-switcher-option:focus-visible {
+    background: #edf5fc;
+    outline: none;
+}
+
+.business-switcher-option.is-current {
+    background: #e6f0f9;
+    color: var(--primary);
+    font-weight: 700;
+}
+
 .header-actions {
     margin-left: auto;
     margin-right: 10px;

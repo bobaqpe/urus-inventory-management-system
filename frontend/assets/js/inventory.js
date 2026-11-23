@@ -1,4 +1,5 @@
 import { setupAuth, onAuthStateChanged, signOut } from './auth-client.js';
+import { cachedGet, invalidateBusinessCache } from './api-cache.js';
 let businessCurrency = 'BND';
 /* =========================================
    MOCK CAFE INVENTORY DATA
@@ -4536,11 +4537,19 @@ async function serverRequest(path, options = {}) {
     if (!serverUser || !serverBusiness) throw new Error('Please sign in and select a business first.');
     const headers = {Authorization: `Bearer ${await serverUser.getIdToken()}`, 'X-Business-ID': serverBusiness};
     if (options.body) headers['Content-Type'] = 'application/json';
-    const response = await fetch('/api/v1' + path, {...options, headers});
-    const contentType = response.headers.get('content-type') || '';
-    const data = response.status === 204 ? null : contentType.includes('application/json') ? await response.json() : null;
-    if (!response.ok) throw new Error(data?.error || `Server error (${response.status}). Please try again.`);
-    if (response.status !== 204 && data === null) throw new Error('The server returned an unexpected response.');
+    const execute = async () => {
+        const response = await fetch('/api/v1' + path, {...options, headers});
+        const contentType = response.headers.get('content-type') || '';
+        const data = response.status === 204 ? null : contentType.includes('application/json') ? await response.json() : null;
+        if (!response.ok) throw new Error(data?.error || `Server error (${response.status}). Please try again.`);
+        if (response.status !== 204 && data === null) throw new Error('The server returned an unexpected response.');
+        return data;
+    };
+    if ((options.method || 'GET').toUpperCase() === 'GET') {
+        return cachedGet({path, userId:serverUser.uid, businessId:serverBusiness, fetchData:execute});
+    }
+    const data = await execute();
+    invalidateBusinessCache(serverUser.uid, serverBusiness);
     return data;
 }
 function selectBusinessDetails(item) {
@@ -4646,6 +4655,7 @@ window.deleteProduct = async id => {
 };
 try {
     const auth = await setupAuth();
+    const { renderBusinessSwitcher } = await import('./business-switcher.js');
     document.querySelector('.logout-btn')?.addEventListener('click',()=>signOut(auth));
     onAuthStateChanged(auth,async user=>{
         if (!user) { location.replace('/'); return; }
@@ -4656,22 +4666,18 @@ try {
             const me=type.includes('application/json') ? await response.json() : null;
             if(!response.ok) throw new Error(me?.error || `Server error (${response.status})`);
             if(!me?.businesses?.length) { location.replace('/onboarding.html'); return; }
-            const select = document.getElementById('business-switch');
-            select.replaceChildren(...me.businesses.map(item => { const option = document.createElement('option'); option.value = item.id; option.textContent = item.name; return option; }));
-            select.hidden = me.businesses.length < 2;
             const saved = sessionStorage.getItem('urus-business-id');
             serverBusiness = me.businesses.some(item => String(item.id) === saved) ? saved : String(me.businesses[0].id);
-            select.value = serverBusiness;
             sessionStorage.setItem('urus-business-id', serverBusiness);
             selectBusinessDetails(me.businesses.find(item => String(item.id) === serverBusiness));
             document.querySelector('.header h1').textContent = me.businesses.find(item => String(item.id) === serverBusiness).name;
-            select.onchange = async () => {
-                serverBusiness = select.value;
+            renderBusinessSwitcher(document.querySelector('.header h1'), me.businesses, serverBusiness, async item => {
+                serverBusiness = String(item.id);
                 sessionStorage.setItem('urus-business-id', serverBusiness);
-                selectBusinessDetails(me.businesses.find(item => String(item.id) === serverBusiness));
-                document.querySelector('.header h1').textContent = me.businesses.find(item => String(item.id) === serverBusiness).name;
+                selectBusinessDetails(item);
+                document.querySelector('.header h1').textContent = item.name;
                 try { await refreshServerData(); } catch (error) { showServerError(error); }
-            };
+            });
             await refreshServerData();
         } catch(error) { showServerError(error); }
     });
