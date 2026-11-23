@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "build": "python3 deploy/build-firebase-public.py && python3 -m compileall -q backend"
+  },
+  "dependencies": {
+    "@neon/config": "^1.14.6",
+    "@neon/env": "^2.1.9"
+  }
+}

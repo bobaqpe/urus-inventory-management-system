@@ -28,10 +28,26 @@ place the HTTP endpoint behind a proxy while leaving port 5000 publicly open.
 
 ## Firebase and Cloud Run migration
 
+As of 2026-11-23 the main Cloud Run service uses Neon PostgreSQL. Its pooled
+connection URL is stored in Secret Manager as `urus-neon-db-url`. The Neon CLI
+link points to project `ancient-sky-53121708`, branch `production`; use a direct
+connection for migrations and backups, and the pooled connection for the app.
+For local configuration, `neon env pull --file .secrets/neon.env --service postgres`
+keeps credentials separate from the existing `.env`. Use `DATABASE_URL_UNPOOLED`
+as `DATABASE_URL` for Alembic. The `npm run build` command prepares Firebase
+Hosting assets and checks Python compilation.
+
+The former Cloud SQL instance is still running: preview still depends on its
+own isolated Cloud SQL database. Do not delete or stop the instance until preview
+has been migrated and a recoverable backup verified. The main database snapshot
+before the Neon migration is `.backups/neon-migration-20261123.dump`. Cloud SQL
+continues to incur charges while running. Changes made on Neon after cutover are
+not present in the Cloud SQL snapshot.
+
 The Firebase Hosting site is `https://urus-ba98e.web.app`. Its `/api/**`
 requests are routed to Cloud Run `urus-api` in `asia-southeast1`. The service
-connects via the Cloud SQL socket to database `urus` on instance `urus-db`;
-`DATABASE_URL` is stored in Secret Manager as `urus-db-url`. Cloud SQL daily
+previously connected via the Cloud SQL socket to database `urus` on instance `urus-db`;
+the old `DATABASE_URL` remains in Secret Manager as `urus-db-url`. Cloud SQL daily
 backups are enabled and retain seven backups; instance deletion protection is
 on. The former local `urus_dev` database and its final backup are retained for
 rollback only. The local application service and its backup timer are disabled

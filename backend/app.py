@@ -32,7 +32,10 @@ def create_app(config=None):
         app.config.update(config)
     if not app.config['DATABASE_URL']:
         raise RuntimeError('DATABASE_URL is required')
-    engine = create_engine(app.config['DATABASE_URL'], pool_pre_ping=True)
+    database_url = app.config['DATABASE_URL']
+    if database_url.startswith(('postgres://', 'postgresql://')):
+        database_url = 'postgresql+psycopg://' + database_url.split('://', 1)[1]
+    engine = create_engine(database_url, pool_pre_ping=True)
     app.extensions['db_engine'] = engine
     certificate_session = cachecontrol.CacheControl(requests.Session())
     certificate_request = google_requests.Request(session=certificate_session)
