@@ -4558,11 +4558,12 @@ function selectBusinessDetails(item) {
     document.querySelectorAll('label[for="item-cost"], label[for="edit-item-cost"]').forEach(label => label.textContent = `Cost per Unit (${businessCurrency})`);
 }
 async function refreshServerData() {
-    [serverCategories, serverSuppliers] = await Promise.all([serverRequest('/categories'), serverRequest('/suppliers')]);
+    const [categoriesResult, suppliersResult, firstBatch] = await Promise.all([serverRequest('/categories'), serverRequest('/suppliers'), serverRequest('/products?limit=500&offset=0')]);
+    serverCategories = categoriesResult; serverSuppliers = suppliersResult;
     categories = serverCategories.map(x => x.name); suppliers = serverSuppliers.map(x => x.name);
     activeSuppliers = serverSuppliers.filter(x => !x.archived_at).map(x => x.name);
-    let rows = [], batch, offset = 0;
-    do { batch = await serverRequest(`/products?limit=500&offset=${offset}`); rows.push(...batch); offset += batch.length; } while (batch.length === 500);
+    let rows = [...firstBatch], batch = firstBatch, offset = firstBatch.length;
+    while (batch.length === 500) { batch = await serverRequest(`/products?limit=500&offset=${offset}`); rows.push(...batch); offset += batch.length; }
     products = rows.map(p => ({id:p.id,name:p.name,sku:p.sku,category:serverCategories.find(c=>c.id===p.category_id)?.name || '',supplier:serverSuppliers.find(s=>s.id===p.supplier_id)?.name || '',supplierArchived:!!serverSuppliers.find(s=>s.id===p.supplier_id)?.archived_at,supplierIds:p.supplier_ids || [p.supplier_id],stock:Number(p.stock),unitType:p.unit,reorderLevel:Number(p.reorder_level),costPrice:Number(p.cost_price),expiryDate:p.expiry_date || ''}));
     refreshMasterDataUI(); renderProducts();
 }
