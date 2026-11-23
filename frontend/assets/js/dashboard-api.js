@@ -17,9 +17,9 @@ async function api(path) {
 }
 async function refresh() {
   $('message').textContent = '';
-  const [summary, activity] = await Promise.all([api('/dashboard/summary'), api('/dashboard/activity')]);
   const active = businesses.find(item => String(item.id) === business);
   $('business-name').textContent = active.name;
+  const [summary, activity] = await Promise.all([api('/dashboard/summary'), api('/dashboard/activity')]);
   $('total-products').textContent = summary.total_products;
   $('low-stock').textContent = summary.low_stock;
   $('inventory-value').textContent = `${active.currency} ${summary.inventory_value}`;
@@ -38,7 +38,6 @@ async function refresh() {
     return row;
   }));
 }
-$('business').onchange = event => { business = event.target.value; sessionStorage.setItem('urus-business-id', business); refresh().catch(report); };
 document.querySelector('.logout-btn').onclick = () => signOut(auth);
 try {
   auth = await setupAuth();
