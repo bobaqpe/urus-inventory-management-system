@@ -26,6 +26,36 @@ async function refresh() {
   $('alert-count').textContent = Number(summary.out_of_stock > 0) + Number(summary.low_stock > 0);
   $('out-stock-alert').textContent = `${summary.out_of_stock} products out of stock`;
   $('low-stock-alert').textContent = `${summary.low_stock} items at or below threshold`;
+  
+  const insightsContainer = $('ai-insights');
+
+  try {
+    const aiData = await api('/ai/insights');
+
+    insightsContainer.replaceChildren(
+      ...aiData.insights.map(insight => {
+        const item = node(
+          'div',
+          '',
+          `ai-insight-item ${insight.severity}`
+        );
+
+        item.append(
+          node('strong', insight.title),
+          node('p', insight.message)
+        );
+
+        return item;
+      })
+    );
+  } catch (error) {
+    console.error('AI Insights error:', error);
+
+    insightsContainer.replaceChildren(
+      node('p', 'AI insights are temporarily unavailable.')
+    );
+  }
+
   const list = $('activity');
   if (!activity.length) { list.replaceChildren(node('p', 'No stock activity yet.')); return; }
   list.replaceChildren(...activity.map(item => {

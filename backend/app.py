@@ -17,6 +17,8 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import HTTPException
 
+from backend.ai.assistant import InventoryAssistant
+from backend.ai.insights import generate_inventory_insights
 
 def create_app(config=None):
     app = Flask(__name__)
@@ -37,6 +39,7 @@ def create_app(config=None):
         database_url = 'postgresql+psycopg://' + database_url.split('://', 1)[1]
     engine = create_engine(database_url, pool_pre_ping=True)
     app.extensions['db_engine'] = engine
+    inventory_assistant = InventoryAssistant(engine)
     certificate_session = cachecontrol.CacheControl(requests.Session())
     certificate_request = google_requests.Request(session=certificate_session)
 
@@ -587,5 +590,48 @@ def create_app(config=None):
         with engine.connect() as conn:
             rows = conn.execute(text('SELECT m.id,m.product_id,p.name,m.quantity_delta,m.reason,m.actor_id,m.created_at FROM stock_movements m JOIN products p ON p.business_id=m.business_id AND p.id=m.product_id WHERE m.business_id=:b ORDER BY m.id DESC LIMIT 50'), {'b': g.business_id}).mappings().all()
         return jsonify([dict(r) for r in rows])
+
+    @app.post('/api/v1/ai/chat')
+    @scoped
+    def ai_chat():
+        payload = body()
+        message = payload.get('message')
+
+        if not isinstance(message, str):
+            raise ValueError('message is required')
+
+        message = message.strip()
+
+        if not message:
+            raise ValueError('message is required')
+
+        if len(message) > 2000:
+            raise ValueError('message must be 2000 characters or fewer')
+
+        try:
+            response = inventory_assistant.chat(
+            business_id=g.business_id,
+            message=message,
+        )
+        except RuntimeError:
+            app.logger.exception('AI assistant unavailable')
+            return jsonify(
+                error='AI assistant is temporarily unavailable'
+            ), 503
+
+        return jsonify(message=response)
+
+
+    @app.get('/api/v1/ai/insights')
+    @scoped
+    def ai_insights():
+        insights = generate_inventory_insights(
+            engine,
+            g.business_id,
+        )
+
+        return jsonify(
+            insights=insights
+        )
 
     return app
