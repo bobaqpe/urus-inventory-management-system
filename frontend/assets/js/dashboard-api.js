@@ -26,7 +26,7 @@ async function refresh() {
   $('alert-count').textContent = Number(summary.out_of_stock > 0) + Number(summary.low_stock > 0);
   $('out-stock-alert').textContent = `${summary.out_of_stock} products out of stock`;
   $('low-stock-alert').textContent = `${summary.low_stock} items at or below threshold`;
-  
+
   const insightsContainer = $('ai-insights');
 
   try {

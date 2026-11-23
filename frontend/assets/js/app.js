@@ -34,10 +34,57 @@ chat.innerHTML = `
 document.body.append(chat);
 const panel = chat.querySelector('.pengurus-panel');
 const toggle = chat.querySelector('.pengurus-toggle');
+const positionKey = 'urus-chat-position';
+let drag = null;
+let suppressClick = false;
+function positionPanel() {
+  const button = toggle.getBoundingClientRect();
+  const height = panel.offsetHeight;
+  const preferredTop = button.bottom + 12 + height <= window.innerHeight - 16
+    ? button.bottom + 12 : button.top - height - 12;
+  panel.style.top = `${Math.max(16, Math.min(preferredTop, window.innerHeight - height - 16))}px`;
+}
+function moveChat(top) {
+  const max = Math.max(8, window.innerHeight - toggle.offsetHeight - 8);
+  const clamped = Math.min(max, Math.max(8, top));
+  chat.style.top = `${clamped}px`;
+  chat.style.bottom = 'auto';
+  if (!panel.hidden) positionPanel();
+  return clamped;
+}
+try {
+  const saved = localStorage.getItem(positionKey);
+  if (saved !== null && Number.isFinite(Number(saved))) moveChat(Number(saved) * Math.max(0, window.innerHeight - toggle.offsetHeight));
+} catch { /* The default position remains available without storage. */ }
+toggle.addEventListener('pointerdown', event => {
+  if (event.button !== 0) return;
+  drag = { id: event.pointerId, startY: event.clientY, top: toggle.getBoundingClientRect().top, moved: false };
+  toggle.setPointerCapture(event.pointerId);
+});
+toggle.addEventListener('pointermove', event => {
+  if (!drag || event.pointerId !== drag.id) return;
+  const delta = event.clientY - drag.startY;
+  if (Math.abs(delta) > 5) drag.moved = true;
+  if (drag.moved) moveChat(drag.top + delta);
+});
+function finishDrag(event) {
+  if (!drag || event.pointerId !== drag.id) return;
+  if (drag.moved) {
+    suppressClick = true;
+    const top = moveChat(toggle.getBoundingClientRect().top);
+    try { localStorage.setItem(positionKey, String(top / Math.max(1, window.innerHeight - toggle.offsetHeight))); } catch {}
+  }
+  drag = null;
+}
+toggle.addEventListener('pointerup', finishDrag);
+toggle.addEventListener('pointercancel', event => { drag = null; });
+window.addEventListener('resize', () => { if (chat.style.top) moveChat(toggle.getBoundingClientRect().top); if (!panel.hidden) positionPanel(); });
 const closeChat = () => { panel.hidden = true; toggle.setAttribute('aria-expanded', 'false'); toggle.setAttribute('aria-label', 'Open Ask Pengurus'); toggle.focus(); };
 toggle.addEventListener('click', () => {
+  if (suppressClick) { suppressClick = false; return; }
   if (!panel.hidden) { closeChat(); return; }
   panel.hidden = false; toggle.setAttribute('aria-expanded', 'true'); toggle.setAttribute('aria-label', 'Close Ask Pengurus');
+  positionPanel();
   chat.querySelector('.pengurus-close').focus();
 });
 chat.querySelector('.pengurus-close').addEventListener('click', closeChat);
